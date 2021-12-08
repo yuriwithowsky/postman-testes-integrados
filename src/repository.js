@@ -1,6 +1,7 @@
 import { join, dirname } from 'path'
 import { Low, JSONFile } from 'lowdb'
 import { fileURLToPath } from 'url'
+import { nanoid } from 'nanoid'
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -17,18 +18,24 @@ const init = async () => {
 
 await init();
 
-const addProduct = async (product) => {
+const add = async (product) => {
+    product.id = nanoid();
     db.data.products.push(product)
     await db.write()
 }
 
 const update = async (productId, product) => {
     const oldProduct = await getById(productId);
-    Object.assign(oldProduct, product)
-    await db.write()
+
+    if(oldProduct) {
+        const updatedProduct = Object.assign(oldProduct, product)
+        await db.write()
+        return updatedProduct;
+    }
+    return null;
 }
 
-const getProducts = async () => {
+const getAll = async () => {
     await db.read()
     const { products } = db.data;
     return products
@@ -44,4 +51,4 @@ const deleteAll = async () => {
     await db.write()
 }
 
-export { addProduct, getProducts, getById, deleteAll, update }
+export { add, getAll, getById, deleteAll, update }
